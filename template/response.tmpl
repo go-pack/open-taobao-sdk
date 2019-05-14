@@ -1,0 +1,59 @@
+package responses
+
+import "encoding/json"
+
+{{range  $v := .CustomType}}
+    {{if not $v.IsBaseType}}
+        type {{$v.Type}} struct{
+            {{range  $v := $v.Setter}}
+                {{if $v.Label}}
+                    //{{$v.Desc}}
+                    {{$v.Label}} {{$v.Type}} `json:"{{$v.JsonName}}"`
+                {{end}}
+            {{end}}
+        }
+    {{end}}
+
+
+{{end}}
+
+
+{{range  $v := .ResponseData}}
+ {{if not $v.IsBaseType}}
+    type {{$v.PublicType}}Results struct{
+    {{if $v.Label}}
+        //{{$v.Desc}}
+        {{if eq $v.DataStructType "list"}}
+            {{$v.PublicType}}List []{{$v.Type}} `json:"{{$v.CustomStructJsonName}}"`
+        {{else}}
+            {{$v.Label}} {{$v.Type}} `json:"{{$v.JsonName}}"`
+        {{end}}
+    {{end}}
+    }
+ {{end}}
+{{end}}
+
+
+type {{.ApiNameCamelNaming}}Body struct {
+    {{range  $v := .ResponseData}}
+        {{if $v.Label}}
+            //{{$v.Desc}}
+            {{if $v.IsBaseType}}
+                {{$v.Label}} {{$v.Type}} `json:"{{$v.JsonName}}"`
+            {{else}}
+                {{$v.Label}} {{$v.PublicType}}Results `json:"{{$v.DataStructJsonName}}"`
+            {{end}}
+        {{end}}
+
+    {{end}}
+{{/*    Results {{.ApiNameCamelNaming}}Results `json:"{{.DataName}}"`*/}}
+}
+type {{.ApiNameCamelNaming}} struct {
+    Body {{.ApiNameCamelNaming}}Body `json:"{{.ApiNameRaw}}"`
+}
+
+func New{{.ApiNameCamelNaming}}(content []byte) *{{.ApiNameCamelNaming}} {
+    response := &{{.ApiNameCamelNaming}}{}
+    json.Unmarshal(content, response)
+    return response
+}

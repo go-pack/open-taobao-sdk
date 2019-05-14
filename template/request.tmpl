@@ -1,0 +1,41 @@
+package requests
+
+import (
+    "github.com/go-pack/opentaobao"
+    "net/url"
+)
+
+type {{.ApiNameCamelNaming}}Request struct{
+    opentaobao.Params
+{{range  $v := .setters}}
+    {{if $v.Label}}
+        //{{$v.Desc}}
+        {{$v.Label}} {{$v.Type}}
+    {{end}}
+{{end}}
+}
+
+func New{{.ApiNameCamelNaming}}Request() *{{.ApiNameCamelNaming}}Request {
+    return &{{.ApiNameCamelNaming}}Request{Params: opentaobao.NewParams()}
+}
+
+func (request *{{.ApiNameCamelNaming}}Request) GetApiMethodName() string  {
+    return "{{.ApiNameRaw}}"
+}
+
+
+func (request *{{.ApiNameCamelNaming}}Request) GetApiParas() url.Values  {
+    params := url.Values{}
+    for key, value := range request.GetParams() {
+        params.Set(key,value)
+    }
+    return params
+}
+
+{{range  $v := .setters}}
+{{if $v.Label}}
+func (request *{{$.ApiNameCamelNaming}}Request) Set{{$v.Label}}( {{$v.Label}} {{$v.Type}})   {
+    request.Set("{{$v.ParamKey}}", {{$v.Label}})
+}
+{{end}}
+{{end}}
